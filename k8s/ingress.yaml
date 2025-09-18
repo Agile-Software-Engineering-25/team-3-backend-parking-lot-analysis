@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: parkingservice
+  labels:
+    app: parkingservice
+  annotations:
+    traefik.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: sau-portal.de
+      http:
+        paths:
+          - path: /parkingservice # specify under which path your service should be reachable
+            pathType: Prefix
+            backend:
+              service:
+                name: parkingservice
+                port:
+                  number: 8080
