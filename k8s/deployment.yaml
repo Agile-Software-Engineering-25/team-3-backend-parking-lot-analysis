@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: parkingservice
-          image: ghcr.io/agile-software-engineering-25/team-3-backend-parking-lot-analysis
+          image: ghcr.io/agile-software-engineering-25/team-3-backend-parking-lot-analysis:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           resources:
@@ -28,16 +29,18 @@ spec:
               cpu: "300m"
           readinessProbe:
             httpGet:
-              path: /parkingservice # you might need to change this to a health endpoint of your application
+              path: /parkingservice/actuator/health # falls Actuator nicht aktiv: anpassen!
               port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            initialDelaySeconds: 30 # mehr Zeit vor dem ersten Check
+            periodSeconds: 10 # Check alle 10s
+            failureThreshold: 6 # bis zu 1 Minute unready erlaubt
           livenessProbe:
             httpGet:
-              path: /parkingservice # you might need to change this to a health endpoint of your application
+              path: /parkingservice/actuator/health # falls Actuator nicht aktiv: anpassen!
               port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 20
-          env: # add environment variables here if needed
-            - name: SOME_ENVIRONMENT_VARIABLE
-              value: "ᓚᘏᗢ"
+            initialDelaySeconds: 180 # Pod darf bis zu 3 Minuten brauchen zum Start
+            periodSeconds: 20 # Check alle 20s
+            failureThreshold: 6 # bis zu 2 Minuten Fehler erlaubt
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "production"

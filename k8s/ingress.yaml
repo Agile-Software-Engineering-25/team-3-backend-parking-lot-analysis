@@ -12,7 +12,7 @@ spec:
     - host: sau-portal.de
       http:
         paths:
-          - path: /parkingservice # specify under which path your service should be reachable
+          - path: /parkingservice
             pathType: Prefix
             backend:
               service:

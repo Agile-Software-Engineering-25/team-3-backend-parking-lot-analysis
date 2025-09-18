@@ -6,24 +6,15 @@ on:
 jobs:
   test-action:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload image
         uses: Agile-Software-Engineering-25/build-and-publish-image@v1
         with:
           push: true
+          extra_tags: ${{ github.sha }}
 
       - name: Deploy to Namespace
         uses: Agile-Software-Engineering-25/deploy-to-k8s@v1
