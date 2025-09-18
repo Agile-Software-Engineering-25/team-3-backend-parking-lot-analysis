@@ -14,6 +14,15 @@ spring:
     driverClassName: org.h2.Driver
     username: sa
     password: password
+
 server:
+  port: 8080
   error:
     include-message: always
+
+# Spring Boot Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
