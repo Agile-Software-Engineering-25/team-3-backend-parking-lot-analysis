@@ -2,17 +2,17 @@ package com.ase.parkingservice.controllers;
 
 import java.time.LocalDate;
 
-import com.ase.parkingservice.entities.Usage;
-import com.ase.parkingservice.services.UsageService;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ase.parkingservice.entities.Usage;
+import com.ase.parkingservice.services.UsageService;
+
 @RestController
-@RequestMapping("/parkservice")
+@RequestMapping("/api/parkservice")
 public class RootController {
   private final UsageService usageService;
 

@@ -2,11 +2,11 @@ package com.ase.parkingservice.services;
 
 import java.time.LocalDate;
 
-import com.ase.parkingservice.entities.Usage;
-import com.ase.parkingservice.repositories.UsageRepository;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.ase.parkingservice.entities.Usage;
+import com.ase.parkingservice.repositories.UsageRepository;
 
 @Service
 public class UsageService {
