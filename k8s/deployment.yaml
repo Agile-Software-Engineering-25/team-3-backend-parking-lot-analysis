@@ -42,7 +42,7 @@ spec:
               memory: 1Gi
           readinessProbe:
             httpGet:
-              path: /parkingservice/api/v1
+              path: /api/parkingservice/api/v1
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 120
@@ -52,7 +52,7 @@ spec:
             successThreshold: 1
           livenessProbe:
             httpGet:
-              path: /parkingservice/api/v1
+              path: /api/parkingservice/api/v1
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 120
