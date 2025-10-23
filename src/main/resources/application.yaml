@@ -15,15 +15,17 @@ spring:
 
 server:
   port: 8080
-  error:
-    include-message: always
+
+error:
+  include-message: always
 
 # Spring Boot Actuator
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
   endpoint:
     health:
       probes:
         enabled: true
-    web:
-      exposure:
-        include: health,info
