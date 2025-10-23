@@ -42,20 +42,20 @@ spec:
               memory: 1Gi
           readinessProbe:
             httpGet:
-              path: /api/parkingservice/api/v1
+              path: /actuator/health/readiness
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
+            initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 6
             successThreshold: 1
           livenessProbe:
             httpGet:
-              path: /api/parkingservice/api/v1
+              path: /actuator/health/liveness
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 120
+            initialDelaySeconds: 60
             periodSeconds: 20
             timeoutSeconds: 3
             failureThreshold: 6
