@@ -20,7 +20,10 @@ server:
 
 # Spring Boot Actuator
 management:
-  endpoints:
+  endpoint:
+    health:
+      probes:
+        enabled: true
     web:
       exposure:
         include: health,info
