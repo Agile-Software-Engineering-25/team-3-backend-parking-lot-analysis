@@ -25,7 +25,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          VITE_BACKEND_BASE_URL: ${{ https://sau-portal.de/parking}}
+          VITE_BACKEND_BASE_URL: ${{ https://sau-portal.de/}}
 
       - name: Setup MinIO Client
         run: |
