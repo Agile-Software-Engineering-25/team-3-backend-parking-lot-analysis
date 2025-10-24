@@ -11,7 +11,7 @@ import com.ase.parkingservice.entities.Usage;
 import com.ase.parkingservice.services.UsageService;
 
 @RestController
-@RequestMapping("/parkservice")
+@RequestMapping("/api/v1/parkservice")
 public class RootController {
   private final UsageService usageService;
 
