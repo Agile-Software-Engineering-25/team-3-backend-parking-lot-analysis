@@ -2,6 +2,7 @@ package com.ase.parkingservice.controllers;
 
 import java.time.LocalDate;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,4 +30,11 @@ public class RootController {
     LocalDate localDate = LocalDate.parse(date);
     return usageService.decrementUsage(parkingLotId, localDate);
   }
+
+  @GetMapping
+  public Usage getUsage(@RequestParam Integer parkingLotId, @RequestParam String date) {
+    LocalDate localDate = LocalDate.parse(date);
+    return usageService.getUsage(parkingLotId, localDate);
+  }
+
 }

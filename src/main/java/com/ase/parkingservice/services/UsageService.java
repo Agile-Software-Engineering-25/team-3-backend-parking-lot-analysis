@@ -40,4 +40,10 @@ public class UsageService {
     }
     throw new IllegalStateException("Kann nicht weiter dekrementieren");
   }
+
+  public Usage getUsage(Integer parkingLotId, LocalDate date) {
+    return repository.findByParkingLotIdAndDate(parkingLotId, date)
+        .orElseThrow(() -> new IllegalArgumentException("Kein Eintrag gefunden"));
+  }
+
 }
