@@ -109,7 +109,8 @@ public class UserInformationJWT {
           allRoles.addAll(realmRoles);
         }
       }
-    } catch (Exception e) {
+    } 
+    catch (Exception e) {
       // Ignore parsing errors
     }
 
@@ -127,7 +128,8 @@ public class UserInformationJWT {
           }
         }
       }
-    } catch (Exception e) {
+    } 
+    catch (Exception e) {
       // Ignore parsing errors
     }
 
