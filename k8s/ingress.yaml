@@ -4,8 +4,6 @@ metadata:
   name: parkingservice
   labels:
     app: parkingservice
-  annotations:
-    traefik.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: traefik
   rules:
