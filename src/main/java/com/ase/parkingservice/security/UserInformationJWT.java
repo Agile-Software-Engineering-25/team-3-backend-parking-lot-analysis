@@ -1,14 +1,12 @@
 package com.ase.parkingservice.security;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 
 /**
  * Helper class to extract user information from JWT tokens.
@@ -111,8 +109,7 @@ public class UserInformationJWT {
           allRoles.addAll(realmRoles);
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       // Ignore parsing errors
     }
 
@@ -130,8 +127,8 @@ public class UserInformationJWT {
           }
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
+      // Ignore parsing errors
     }
 
     // remove duplicates
@@ -151,10 +148,8 @@ public class UserInformationJWT {
     }
 
     List<String> roles = getRoles();
-    return roles.stream()
-        .anyMatch(r -> r.equalsIgnoreCase(role));
+    return roles.stream().anyMatch(r -> r.equalsIgnoreCase(role));
   }
-
 
   /**
    * Get a custom claim from the JWT
