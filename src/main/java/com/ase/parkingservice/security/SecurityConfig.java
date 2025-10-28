@@ -3,11 +3,9 @@ package com.ase.parkingservice.security;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -32,7 +30,7 @@ public class SecurityConfig {
   @Order(1)
   public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
     JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
-    jwtConverter.setJwtGrantedAuthoritiesConverter(new JwtAuthConverter()); // maps "groups" -> ROLE_* (upper)
+    jwtConverter.setJwtGrantedAuthoritiesConverter(new JwtAuthConverter());
 
     http
         .securityMatcher("/api/**")
@@ -53,8 +51,8 @@ public class SecurityConfig {
    */
   @Bean
   @Order(2)
-  public SecurityFilterChain webSecurity(HttpSecurity http,
-                                         OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService) throws Exception {
+  public SecurityFilterChain webSecurity(HttpSecurity http, OAuth2UserService<OidcUserRequest,
+      OidcUser> oidcUserService) throws Exception {
 
     http
         .securityMatcher("/**")
@@ -103,7 +101,8 @@ public class SecurityConfig {
         }
       }
 
-      return new DefaultOidcUser(mapped, user.getIdToken(), user.getUserInfo(), "preferred_username");
+      return new DefaultOidcUser(mapped, user.getIdToken(),
+          user.getUserInfo(), "preferred_username");
     };
   }
 }
