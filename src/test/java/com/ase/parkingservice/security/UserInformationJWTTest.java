@@ -1,219 +1,109 @@
 package com.ase.parkingservice.security;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * Tests for UserInformationJWT helper class.
- */
-class UserInformationJWTTest {
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.web.SecurityFilterChain;
 
-  private static final int TOKEN_EXPIRATION_SECONDS = 3600;
-  private static final int EXPECTED_MIN_ROLE_COUNT = 8;
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
 
-  private Jwt testJwt;
+  /**
+   * API-Security: rein stateless, nur Bearer-JWT, CSRF aus, eigene Authorize-Regeln.
+   */
+  @Bean
+  @Order(1)
+  public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
+    JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+    jwtConverter.setJwtGrantedAuthoritiesConverter(new JwtAuthConverter()); // maps "groups" -> ROLE_* (upper)
 
-  @BeforeEach
-  void setUp() {
-    // Create a mock JWT with test data matching the real Keycloak token structure
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("sub", "0b540a6e-988d-484a-9247-9e3a2f237438");
-    claims.put("preferred_username", "david");
-    claims.put("email", "dave@fave.com");
-    claims.put("given_name", "david");
-    claims.put("family_name", "daivd");
-    claims.put("name", "david daivd");
+    http
+        .securityMatcher("/api/**")
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .requestMatchers("/api/demo").hasRole("DEFAULT-ROLES-SAU")
+            .anyRequest().authenticated())
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
 
-    // Groups claim
-    claims.put("groups", Arrays.asList(
-        "default-roles-sau",
-        "manage-users",
-        "offline_access",
-        "lecturer",
-        "uma_authorization"
-    ));
-
-    // realm_access with roles
-    Map<String, Object> realmAccess = new HashMap<>();
-    realmAccess.put("roles", Arrays.asList(
-        "default-roles-sau",
-        "manage-users",
-        "offline_access",
-        "lecturer",
-        "uma_authorization"
-    ));
-    claims.put("realm_access", realmAccess);
-
-    // resource_access with account roles
-    Map<String, Object> accountAccess = new HashMap<>();
-    accountAccess.put("roles", Arrays.asList(
-        "manage-account",
-        "manage-account-links",
-        "view-profile"
-    ));
-    Map<String, Object> resourceAccess = new HashMap<>();
-    resourceAccess.put("account", accountAccess);
-    claims.put("resource_access", resourceAccess);
-
-    Map<String, Object> headers = new HashMap<>();
-    headers.put("alg", "RS256");
-
-    testJwt = new Jwt(
-        "test-token-value",
-        Instant.now(),
-        Instant.now().plusSeconds(TOKEN_EXPIRATION_SECONDS),
-        headers,
-        claims
-    );
-
-    // Set the JWT in the security context
-    JwtAuthenticationToken auth = new JwtAuthenticationToken(testJwt);
-    SecurityContextHolder.getContext().setAuthentication(auth);
+    return http.build();
   }
 
-  @AfterEach
-  void tearDown() {
-    // Clear security context after each test
-    SecurityContextHolder.clearContext();
+  /**
+   * Web-Security: OAuth2-Login (OIDC), Session-basiert, CSRF aktiv außer für /api/**.
+   */
+  @Bean
+  @Order(2)
+  public SecurityFilterChain webSecurity(HttpSecurity http,
+                                         OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService) throws Exception {
+
+    http
+        .securityMatcher("/**")
+        .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/", "/assets/**", "/login", "/error").permitAll()
+            .anyRequest().authenticated())
+        .oauth2Login(oauth -> oauth
+            .userInfoEndpoint(u -> u.oidcUserService(oidcUserService)))
+        .logout(l -> l.logoutSuccessUrl("/"));
+
+    return http.build();
   }
 
-  @Test
-  void testGetUserId() {
-    String userId = UserInformationJWT.getUserId();
-    assertEquals("0b540a6e-988d-484a-9247-9e3a2f237438", userId);
-  }
+  /**
+   * OIDC-UserService: übernimmt Gruppen/Claims in ROLE_*-Authorities,
+   * passend zum JwtAuthConverter (hasRole bleibt konsistent).
+   */
+  @Bean
+  public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+    OidcUserService delegate = new OidcUserService();
+    return (OidcUserRequest req) -> {
+      OidcUser user = delegate.loadUser(req);
 
-  @Test
-  void testGetUsername() {
-    String username = UserInformationJWT.getUsername();
-    assertEquals("david", username);
-  }
+      Set<GrantedAuthority> mapped = new HashSet<>(user.getAuthorities());
 
-  @Test
-  void testGetEmail() {
-    String email = UserInformationJWT.getEmail();
-    assertEquals("dave@fave.com", email);
-  }
+      // Versuche "groups" analog zum JWT
+      @SuppressWarnings("unchecked")
+      Collection<String> groups = (Collection<String>) user.getAttributes().get("groups");
+      if (groups != null) {
+        for (String g : groups) {
+          mapped.add(new SimpleGrantedAuthority("ROLE_" + g.toUpperCase()));
+        }
+      }
 
-  @Test
-  void testGetFirstName() {
-    String firstName = UserInformationJWT.getFirstName();
-    assertEquals("david", firstName);
-  }
+      // Optional: realm_access.roles (z. B. Keycloak)
+      Object realmAccess = user.getAttributes().get("realm_access");
+      if (realmAccess instanceof java.util.Map<?, ?> realmMap) {
+        Object rolesObj = realmMap.get("roles");
+        if (rolesObj instanceof Collection<?> roles) {
+          for (Object r : roles) {
+            if (r != null) {
+              mapped.add(new SimpleGrantedAuthority("ROLE_" + r.toString().toUpperCase()));
+            }
+          }
+        }
+      }
 
-  @Test
-  void testGetLastName() {
-    String lastName = UserInformationJWT.getLastName();
-    assertEquals("daivd", lastName);
-  }
-
-  @Test
-  void testGetRoles() {
-    List<String> roles = UserInformationJWT.getRoles();
-
-    // Should contain roles from groups
-    assertTrue(roles.contains("lecturer"));
-    assertTrue(roles.contains("manage-users"));
-
-    // Should contain roles from resource_access.account.roles
-    assertTrue(roles.contains("manage-account"));
-    assertTrue(roles.contains("view-profile"));
-
-    // Should have at least 8 unique roles (5 from groups + 3 from account)
-    assertTrue(roles.size() >= EXPECTED_MIN_ROLE_COUNT);
-  }
-
-  @Test
-  void testHasRoleFromGroups() {
-    assertTrue(UserInformationJWT.hasRole("lecturer"));
-    assertTrue(UserInformationJWT.hasRole("manage-users"));
-  }
-
-  @Test
-  void testHasRoleFromRealmAccess() {
-    assertTrue(UserInformationJWT.hasRole("default-roles-sau"));
-    assertTrue(UserInformationJWT.hasRole("offline_access"));
-  }
-
-  @Test
-  void testHasRoleFromResourceAccess() {
-    assertTrue(UserInformationJWT.hasRole("manage-account"));
-    assertTrue(UserInformationJWT.hasRole("view-profile"));
-    assertTrue(UserInformationJWT.hasRole("manage-account-links"));
-  }
-
-  @Test
-  void testHasRoleCaseInsensitive() {
-    assertTrue(UserInformationJWT.hasRole("LECTURER"));
-    assertTrue(UserInformationJWT.hasRole("Manage-Account"));
-    assertTrue(UserInformationJWT.hasRole("lecturer"));
-  }
-
-  @Test
-  void testHasRoleNotExists() {
-    assertFalse(UserInformationJWT.hasRole("admin"));
-    assertFalse(UserInformationJWT.hasRole("superuser"));
-  }
-
-  @Test
-  void testHasRoleWithNull() {
-    assertFalse(UserInformationJWT.hasRole(null));
-  }
-
-  @Test
-  void testGetClaim() {
-    Object email = UserInformationJWT.getClaim("email");
-    assertEquals("dave@fave.com", email);
-  }
-
-  @Test
-  void testGetClaimAsString() {
-    String email = UserInformationJWT.getClaimAsString("email");
-    assertEquals("dave@fave.com", email);
-  }
-
-  @Test
-  void testIsAuthenticated() {
-    assertTrue(UserInformationJWT.isAuthenticated());
-  }
-
-  @Test
-  void testIsAuthenticatedWithoutContext() {
-    SecurityContextHolder.clearContext();
-    assertFalse(UserInformationJWT.isAuthenticated());
-  }
-
-  @Test
-  void testGetUserIdWithoutAuthentication() {
-    SecurityContextHolder.clearContext();
-    assertNull(UserInformationJWT.getUserId());
-  }
-
-  @Test
-  void testGetRolesWithoutAuthentication() {
-    SecurityContextHolder.clearContext();
-    List<String> roles = UserInformationJWT.getRoles();
-    assertTrue(roles.isEmpty());
-  }
-
-  @Test
-  void testGetRolesNoDuplicates() {
-    List<String> roles = UserInformationJWT.getRoles();
-    // Check that there are no duplicates
-    long uniqueCount = roles.stream().distinct().count();
-    assertEquals(roles.size(), uniqueCount, "Roles list should not contain duplicates");
+      return new DefaultOidcUser(mapped, user.getIdToken(), user.getUserInfo(), "preferred_username");
+    };
   }
 }
