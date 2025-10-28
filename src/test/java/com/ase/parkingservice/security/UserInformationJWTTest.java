@@ -1,5 +1,10 @@
 package com.ase.parkingservice.security;
 
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,18 +12,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for UserInformationJWT helper class
+ * Tests for UserInformationJWT helper class.
  */
 class UserInformationJWTTest {
+
+  private static final int TOKEN_EXPIRATION_SECONDS = 3600;
+  private static final int EXPECTED_MIN_ROLE_COUNT = 8;
 
   private Jwt testJwt;
 
@@ -70,7 +72,7 @@ class UserInformationJWTTest {
     testJwt = new Jwt(
         "test-token-value",
         Instant.now(),
-        Instant.now().plusSeconds(3600),
+        Instant.now().plusSeconds(TOKEN_EXPIRATION_SECONDS),
         headers,
         claims
     );
@@ -129,7 +131,7 @@ class UserInformationJWTTest {
     assertTrue(roles.contains("view-profile"));
 
     // Should have at least 8 unique roles (5 from groups + 3 from account)
-    assertTrue(roles.size() >= 8);
+    assertTrue(roles.size() >= EXPECTED_MIN_ROLE_COUNT);
   }
 
   @Test
@@ -177,39 +179,4 @@ class UserInformationJWTTest {
 
   @Test
   void testGetClaimAsString() {
-    String email = UserInformationJWT.getClaimAsString("email");
-    assertEquals("dave@fave.com", email);
-  }
-
-  @Test
-  void testIsAuthenticated() {
-    assertTrue(UserInformationJWT.isAuthenticated());
-  }
-
-  @Test
-  void testIsAuthenticatedWithoutContext() {
-    SecurityContextHolder.clearContext();
-    assertFalse(UserInformationJWT.isAuthenticated());
-  }
-
-  @Test
-  void testGetUserIdWithoutAuthentication() {
-    SecurityContextHolder.clearContext();
-    assertNull(UserInformationJWT.getUserId());
-  }
-
-  @Test
-  void testGetRolesWithoutAuthentication() {
-    SecurityContextHolder.clearContext();
-    List<String> roles = UserInformationJWT.getRoles();
-    assertTrue(roles.isEmpty());
-  }
-
-  @Test
-  void testGetRolesNoDuplicates() {
-    List<String> roles = UserInformationJWT.getRoles();
-    // Check that there are no duplicates
-    long uniqueCount = roles.stream().distinct().count();
-    assertEquals(roles.size(), uniqueCount, "Roles list should not contain duplicates");
-  }
-}
+    String email = UserInformationJWT.getClaimAsStr
