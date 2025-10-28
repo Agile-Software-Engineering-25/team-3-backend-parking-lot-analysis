@@ -1,10 +1,8 @@
 package com.ase.parkingservice.security;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -57,8 +55,10 @@ public final class UserInformationJWT {
           email = (attr != null) ? attr.toString() : null;
         }
         return email;
-      } else {
-        Object attr = ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("email");
+      }
+      else {
+        Object attr =
+            ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("email");
         return (attr != null) ? attr.toString() : null;
       }
     }
@@ -76,7 +76,8 @@ public final class UserInformationJWT {
       Object principal = ((OAuth2AuthenticationToken) auth).getPrincipal();
       if (principal instanceof OidcUser) {
         return ((OidcUser) principal).getSubject();
-      } else {
+      }
+      else {
         Object sub = ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("sub");
         return sub != null ? sub.toString() : null;
       }
@@ -89,9 +90,13 @@ public final class UserInformationJWT {
     if (auth instanceof JwtAuthenticationToken) {
       Jwt jwt = ((JwtAuthenticationToken) auth).getToken();
       String preferred = jwt.getClaimAsString("preferred_username");
-      if (preferred != null) return preferred;
+      if (preferred != null) {
+        return preferred;
+      }
       String upn = jwt.getClaimAsString("upn");
-      if (upn != null) return upn;
+      if (upn != null) {
+        return upn;
+      }
       return jwt.getClaimAsString("name");
     }
     if (auth instanceof OAuth2AuthenticationToken) {
@@ -99,28 +104,38 @@ public final class UserInformationJWT {
       if (principal instanceof OidcUser) {
         OidcUser oidc = (OidcUser) principal;
         String preferred = (String) oidc.getAttributes().get("preferred_username");
-        if (preferred != null) return preferred;
+        if (preferred != null) {
+          return preferred;
+        }
         String name = oidc.getFullName();
-        if (name != null) return name;
+        if (name != null) {
+          return name;
+        }
         Object n = oidc.getAttributes().get("name");
         return n != null ? n.toString() : null;
-      } else {
-        Object preferred = ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("preferred_username");
-        if (preferred != null) return preferred.toString();
+      }
+      else {
+        Object preferred = ((OAuth2AuthenticationToken) auth)
+            .getPrincipal().getAttributes().get("preferred_username");
+        if (preferred != null) {
+          return preferred.toString();
+        }
         Object n = ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("name");
         return n != null ? n.toString() : null;
       }
     }
     return null;
   }
-
+  private static final int ROLE_PREFIX_LENGTH = 5;
   public static Collection<String> getRoles() {
     Authentication auth = getAuth();
-    if (auth == null) return List.of();
+    if (auth == null) {
+      return List.of();
+    }
     return auth.getAuthorities()
         .stream()
         .map(GrantedAuthority::getAuthority)
-        .map(a -> a.startsWith("ROLE_") ? a.substring(5) : a)
+        .map(a -> a.startsWith("ROLE_") ? a.substring(ROLE_PREFIX_LENGTH) : a)
         .collect(Collectors.toList());
   }
 
