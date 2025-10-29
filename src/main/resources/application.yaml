@@ -1,4 +1,10 @@
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://keycloak.sau-portal.de/realms/sau
+          jwk-set-uri: https://keycloak.sau-portal.de/realms/sau/protocol/openid-connect/certs
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
