@@ -17,17 +17,20 @@ public class SecurityConfig {
     JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
     jwtConverter.setJwtGrantedAuthoritiesConverter(new JwtAuthConverter());
 
-
-    //the role always has to be capitalized
     http
-        .csrf(
-            csrf -> csrf.disable()) // Disable CSRF for API endpoints isnt needed for our purpose
+        .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(authorize -> authorize
+            .requestMatchers("/actuator/health").permitAll()
             .requestMatchers("/demo").hasRole("DEFAULT-ROLES-SAU")
-            .requestMatchers("/admin/**").hasRole("admin")
-            .anyRequest().authenticated())
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated() // Alle anderen Requests benötigen Auth
+        )
         .oauth2ResourceServer(oauth2 -> oauth2
-            .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
+            .jwt(jwt -> jwt
+                .jwtAuthenticationConverter(jwtConverter)
+            )
+        );
+
     return http.build();
   }
 }
