@@ -21,7 +21,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/actuator/health").permitAll()
-            .requestMatchers("/demo").hasRole("DEFAULT-ROLES-SAU")
+            .requestMatchers("/api/parkingservice").hasRole("DEFAULT-ROLES-SAU")
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated() // Alle anderen Requests benötigen Auth
         )
