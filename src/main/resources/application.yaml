@@ -29,7 +29,7 @@ error:
 management:
   endpoints:
     web:
-      base-path: /api/parkingservice/actuator
+      base-path: /api/parkingservice
       exposure:
         include: health,info,mappings
   endpoint:
