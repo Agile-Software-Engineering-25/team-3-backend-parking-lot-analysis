@@ -1,5 +1,6 @@
 package com.ase.parkingservice.security;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,7 +21,7 @@ public class SecurityConfig {
     //the role always has to be capitalized
     http
         .csrf(
-            csrf -> csrf.disable()) // Disable CSRF for API endpoints isnt needed
+            csrf -> csrf.disable()) // Disable CSRF for API endpoints isnt needed for our purpose
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/demo").hasRole("DEFAULT-ROLES-SAU")
             .requestMatchers("/admin/**").hasRole("admin")

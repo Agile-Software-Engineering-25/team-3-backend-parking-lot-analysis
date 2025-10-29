@@ -16,7 +16,6 @@ public class UserInformationJWT {
 
   /**
    * Get the current JWT token from the security context
-   *
    * @return JWT token or null if not authenticated
    */
   private static Jwt getCurrentJwt() {
@@ -31,7 +30,6 @@ public class UserInformationJWT {
 
   /**
    * Get the user ID
-   *
    * @return User ID or null if not available
    */
   public static String getUserId() {
@@ -41,7 +39,6 @@ public class UserInformationJWT {
 
   /**
    * Get the user's email address
-   *
    * @return Email or null if not available
    */
   public static String getEmail() {
@@ -51,7 +48,6 @@ public class UserInformationJWT {
 
   /**
    * Get the username
-   *
    * @return Username or null if not available
    */
   public static String getUsername() {
@@ -61,7 +57,6 @@ public class UserInformationJWT {
 
   /**
    * Get the user's first name
-   *
    * @return First name or null if not available
    */
   public static String getFirstName() {
@@ -71,7 +66,6 @@ public class UserInformationJWT {
 
   /**
    * Get the user's last name
-   *
    * @return Last name or null if not available
    */
   public static String getLastName() {
@@ -81,7 +75,6 @@ public class UserInformationJWT {
 
   /**
    * Get all roles/groups of the user from multiple sources.
-   *
    * @return List of all unique roles or empty list if not available
    */
   public static List<String> getRoles() {
@@ -130,7 +123,6 @@ public class UserInformationJWT {
       }
     }
     catch (Exception e) {
-      // Ignore parsing errors
     }
 
     // remove duplicates
@@ -150,12 +142,13 @@ public class UserInformationJWT {
     }
 
     List<String> roles = getRoles();
-    return roles.stream().anyMatch(r -> r.equalsIgnoreCase(role));
+    return roles.stream()
+        .anyMatch(r -> r.equalsIgnoreCase(role));
   }
+
 
   /**
    * Get a custom claim from the JWT
-   *
    * @param claimName Name of the claim
    * @return Claim value or null if not available
    */
@@ -166,7 +159,6 @@ public class UserInformationJWT {
 
   /**
    * Get a custom claim as String
-   *
    * @param claimName Name of the claim
    * @return Claim value as String or null if not available
    */
@@ -177,7 +169,6 @@ public class UserInformationJWT {
 
   /**
    * Check if a user is currently authenticated
-   *
    * @return true if authenticated, false otherwise
    */
   public static boolean isAuthenticated() {
