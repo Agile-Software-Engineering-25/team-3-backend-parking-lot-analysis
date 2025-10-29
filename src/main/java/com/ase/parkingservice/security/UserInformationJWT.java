@@ -1,145 +1,186 @@
 package com.ase.parkingservice.security;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 /**
- * Helper-Klasse, die Benutzerinformationen sowohl aus JWT (Bearer)
- * als auch aus OIDC/OAuth2 (Session-Login) ausliest.
+ * Helper class to extract user information from JWT tokens.
+ * Provides convenient static methods to access authenticated user data.
  */
-public final class UserInformationJWT {
+public class UserInformationJWT {
 
-  private UserInformationJWT() {}
-
-  private static Authentication getAuth() {
-    return SecurityContextHolder.getContext().getAuthentication();
-  }
-
+  /**
+   * Get the current JWT token from the security context
+   *
+   * @return JWT token or null if not authenticated
+   */
   private static Jwt getCurrentJwt() {
-    Authentication authentication = getAuth();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
     if (authentication instanceof JwtAuthenticationToken) {
       return ((JwtAuthenticationToken) authentication).getToken();
     }
+
     return null;
   }
 
-  public static boolean isAuthenticated() {
-    return getAuth() != null && getAuth().isAuthenticated();
-  }
-
-  public static String getEmail() {
-    Authentication auth = getAuth();
-    if (auth instanceof JwtAuthenticationToken) {
-      Jwt jwt = ((JwtAuthenticationToken) auth).getToken();
-      String email = jwt.getClaimAsString("email");
-      if (email == null) {
-        email = jwt.getClaimAsString("preferred_username");
-      }
-      return email;
-    }
-    if (auth instanceof OAuth2AuthenticationToken) {
-      Object principal = ((OAuth2AuthenticationToken) auth).getPrincipal();
-      if (principal instanceof OidcUser) {
-        OidcUser oidc = (OidcUser) principal;
-        String email = oidc.getEmail();
-        if (email == null) {
-          Object attr = oidc.getAttributes().get("email");
-          email = (attr != null) ? attr.toString() : null;
-        }
-        return email;
-      }
-      else {
-        Object attr =
-            ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("email");
-        return (attr != null) ? attr.toString() : null;
-      }
-    }
-    return null;
-  }
-
+  /**
+   * Get the user ID
+   *
+   * @return User ID or null if not available
+   */
   public static String getUserId() {
-    Authentication auth = getAuth();
-    if (auth instanceof JwtAuthenticationToken) {
-      Jwt jwt = ((JwtAuthenticationToken) auth).getToken();
-      String sub = jwt.getClaimAsString("sub");
-      return sub != null ? sub : jwt.getSubject();
-    }
-    if (auth instanceof OAuth2AuthenticationToken) {
-      Object principal = ((OAuth2AuthenticationToken) auth).getPrincipal();
-      if (principal instanceof OidcUser) {
-        return ((OidcUser) principal).getSubject();
-      }
-      else {
-        Object sub = ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("sub");
-        return sub != null ? sub.toString() : null;
-      }
-    }
-    return null;
+    Jwt jwt = getCurrentJwt();
+    return jwt != null ? jwt.getSubject() : null;
   }
 
-  public static String getUsername() {
-    Authentication auth = getAuth();
-    if (auth instanceof JwtAuthenticationToken) {
-      Jwt jwt = ((JwtAuthenticationToken) auth).getToken();
-      String preferred = jwt.getClaimAsString("preferred_username");
-      if (preferred != null) {
-        return preferred;
-      }
-      String upn = jwt.getClaimAsString("upn");
-      if (upn != null) {
-        return upn;
-      }
-      return jwt.getClaimAsString("name");
-    }
-    if (auth instanceof OAuth2AuthenticationToken) {
-      Object principal = ((OAuth2AuthenticationToken) auth).getPrincipal();
-      if (principal instanceof OidcUser) {
-        OidcUser oidc = (OidcUser) principal;
-        String preferred = (String) oidc.getAttributes().get("preferred_username");
-        if (preferred != null) {
-          return preferred;
-        }
-        String name = oidc.getFullName();
-        if (name != null) {
-          return name;
-        }
-        Object n = oidc.getAttributes().get("name");
-        return n != null ? n.toString() : null;
-      }
-      else {
-        Object preferred = ((OAuth2AuthenticationToken) auth)
-            .getPrincipal().getAttributes().get("preferred_username");
-        if (preferred != null) {
-          return preferred.toString();
-        }
-        Object n = ((OAuth2AuthenticationToken) auth).getPrincipal().getAttributes().get("name");
-        return n != null ? n.toString() : null;
-      }
-    }
-    return null;
+  /**
+   * Get the user's email address
+   *
+   * @return Email or null if not available
+   */
+  public static String getEmail() {
+    Jwt jwt = getCurrentJwt();
+    return jwt != null ? jwt.getClaimAsString("email") : null;
   }
-  private static final int ROLE_PREFIX_LENGTH = 5;
-  public static Collection<String> getRoles() {
-    Authentication auth = getAuth();
-    if (auth == null) {
+
+  /**
+   * Get the username
+   *
+   * @return Username or null if not available
+   */
+  public static String getUsername() {
+    Jwt jwt = getCurrentJwt();
+    return jwt != null ? jwt.getClaimAsString("preferred_username") : null;
+  }
+
+  /**
+   * Get the user's first name
+   *
+   * @return First name or null if not available
+   */
+  public static String getFirstName() {
+    Jwt jwt = getCurrentJwt();
+    return jwt != null ? jwt.getClaimAsString("given_name") : null;
+  }
+
+  /**
+   * Get the user's last name
+   *
+   * @return Last name or null if not available
+   */
+  public static String getLastName() {
+    Jwt jwt = getCurrentJwt();
+    return jwt != null ? jwt.getClaimAsString("family_name") : null;
+  }
+
+  /**
+   * Get all roles/groups of the user from multiple sources.
+   *
+   * @return List of all unique roles or empty list if not available
+   */
+  public static List<String> getRoles() {
+    Jwt jwt = getCurrentJwt();
+    if (jwt == null) {
       return List.of();
     }
-    return auth.getAuthorities()
-        .stream()
-        .map(GrantedAuthority::getAuthority)
-        .map(a -> a.startsWith("ROLE_") ? a.substring(ROLE_PREFIX_LENGTH) : a)
-        .collect(Collectors.toList());
+
+    List<String> allRoles = new ArrayList<>();
+
+    // combine all group fields
+    // groups
+    List<String> groups = jwt.getClaimAsStringList("groups");
+    if (groups != null) {
+      allRoles.addAll(groups);
+    }
+
+    // realm_access.roles
+    try {
+      Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+      if (realmAccess != null && realmAccess.get("roles") instanceof List) {
+        @SuppressWarnings("unchecked")
+        List<String> realmRoles = (List<String>) realmAccess.get("roles");
+        if (realmRoles != null) {
+          allRoles.addAll(realmRoles);
+        }
+      }
+    }
+    catch (Exception e) {
+      // Ignore parsing errors
+    }
+
+    // resource_access.account.roles
+    try {
+      Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+      if (resourceAccess != null && resourceAccess.get("account") instanceof Map) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> accountAccess = (Map<String, Object>) resourceAccess.get("account");
+        if (accountAccess != null && accountAccess.get("roles") instanceof List) {
+          @SuppressWarnings("unchecked")
+          List<String> accountRoles = (List<String>) accountAccess.get("roles");
+          if (accountRoles != null) {
+            allRoles.addAll(accountRoles);
+          }
+        }
+      }
+    }
+    catch (Exception e) {
+      // Ignore parsing errors
+    }
+
+    // remove duplicates
+    return allRoles.stream().distinct().toList();
   }
 
-  public static Jwt getJwtOrNull() {
-    return getCurrentJwt();
+  /**
+   * Check if the user has a specific role (case-insensitive).
+   * Searches in groups, realm_access.roles, and resource_access.account.roles
+   *
+   * @param role The role to check
+   * @return true if user has the role, false otherwise
+   */
+  public static boolean hasRole(String role) {
+    if (role == null) {
+      return false;
+    }
+
+    List<String> roles = getRoles();
+    return roles.stream().anyMatch(r -> r.equalsIgnoreCase(role));
+  }
+
+  /**
+   * Get a custom claim from the JWT
+   *
+   * @param claimName Name of the claim
+   * @return Claim value or null if not available
+   */
+  public static Object getClaim(String claimName) {
+    Jwt jwt = getCurrentJwt();
+    return jwt != null ? jwt.getClaim(claimName) : null;
+  }
+
+  /**
+   * Get a custom claim as String
+   *
+   * @param claimName Name of the claim
+   * @return Claim value as String or null if not available
+   */
+  public static String getClaimAsString(String claimName) {
+    Jwt jwt = getCurrentJwt();
+    return jwt != null ? jwt.getClaimAsString(claimName) : null;
+  }
+
+  /**
+   * Check if a user is currently authenticated
+   *
+   * @return true if authenticated, false otherwise
+   */
+  public static boolean isAuthenticated() {
+    return getCurrentJwt() != null;
   }
 }
