@@ -29,6 +29,10 @@ public class SecurityConfig {
             .jwt(jwt -> jwt
                 .jwtAuthenticationConverter(jwtConverter)
             )
+        )
+        .exceptionHandling(exception -> exception
+          .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // -> 401
+          .accessDeniedHandler(new JwtAccessDeniedHandler()) // -> 403
         );
 
     return http.build();
