@@ -20,7 +20,7 @@ public class ExternalApiService {
 
     public List<EmployeeDTO> fetchEmployeeData() {
           String url = "https://sau-portal.de/team-11-api/api/v1/users?withDetails=false";
-          ResponseEntity<EmployeeDTO[]> response =
+          ResponseEntity<EmployeeDto[]> response =
               restTemplate.getForEntity(url, EmployeeDto[].class);
   
           return List.of(response.getBody());
