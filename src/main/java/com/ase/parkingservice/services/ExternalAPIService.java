@@ -4,7 +4,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.ase.parkingservice.entities.Usage;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Service zum Abrufen und Verarbeiten externer API-Daten.
@@ -12,18 +12,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class ExternalApiService {
 
-    private final WebClient webClient;
+    private final RestTemplate restTemplate;
 
-    public ExternalApiService(WebClient webClient) {
-        this.webClient = webClient;
+    public ExternalApiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
+
+    public List<EmployeeDTO> fetchEmployeeData() {
+          String url = "https://sau-portal.de/team-11-api/api/v1/users?withDetails=false";
+          ResponseEntity<EmployeeDTO[]> response =
+              restTemplate.getForEntity(url, EmployeeDTO[].class);
   
-    public List<ExternalParkingDto> fetchParkingData() {
-        return webClient.get()
-            .uri("https://sau-portal.de/team-11-api/api/v1/users?withDetails=false")
-            .retrieve()
-            .bodyToFlux(EmployeeDto.class)
-            .collectList()
-            .block(); // block() = synchroner Aufruf (für klassische Spring Services)
-    }
+          return List.of(response.getBody());
+      }
 }
