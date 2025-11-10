@@ -4,7 +4,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.ase.parkingservice.entities.EmployeeDto;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
 
 /**
  * Service zum Abrufen und Verarbeiten externer API-Daten.
