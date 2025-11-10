@@ -14,9 +14,6 @@ public class EmployeeDto {
     private String employmentStatus;
     private boolean drivesCar;
 
-    // Constructors
-    public EmployeeDto() {}
-
     public EmployeeDto(UUID id, LocalDate dateOfBirth, String address, String phoneNumber,
                        String employeeNumber, String fieldChair, String title,
                        String employmentStatus, boolean drivesCar) {
