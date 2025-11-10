@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.ase.parkingservice.entities;
 
 import java.time.LocalDate;
 import java.util.UUID;
