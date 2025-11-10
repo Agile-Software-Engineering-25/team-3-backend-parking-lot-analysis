@@ -13,8 +13,8 @@ public class Application {
   }
 
   @Bean
-    public WebClient webClient(WebClient.Builder builder) {
-        return builder.build();
-    }
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
 
 }
