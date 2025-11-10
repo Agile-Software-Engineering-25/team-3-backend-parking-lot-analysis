@@ -12,4 +12,9 @@ public class Application {
     SpringApplication.run(Application.class, args);
   }
 
+  @Bean
+    public WebClient webClient(WebClient.Builder builder) {
+        return builder.build();
+    }
+
 }
