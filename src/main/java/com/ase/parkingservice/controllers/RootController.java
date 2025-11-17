@@ -1,6 +1,7 @@
 package com.ase.parkingservice.controllers;
 
 import java.time.LocalDate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,28 +14,33 @@ import com.ase.parkingservice.services.UsageService;
 @RestController
 @RequestMapping("/api/parkingservice")
 public class RootController {
-  private final UsageService usageService;
 
-  public RootController(UsageService usageService) {
-    this.usageService = usageService;
-  }
+    private final UsageService usageService;
 
-  @PostMapping
-  public Usage park(@RequestParam Integer parkingLotId, @RequestParam String date) {
-    LocalDate localDate = LocalDate.parse(date);
-    return usageService.incrementUsage(parkingLotId, localDate);
-  }
+    public RootController(UsageService usageService) {
+        this.usageService = usageService;
+    }
 
-  @DeleteMapping
-  public Usage leave(@RequestParam Integer parkingLotId, @RequestParam String date) {
-    LocalDate localDate = LocalDate.parse(date);
-    return usageService.decrementUsage(parkingLotId, localDate);
-  }
+    @PostMapping
+    public Usage park(@RequestParam Integer parkingLotId, @RequestParam String date) {
+        LocalDate localDate = LocalDate.parse(date);
+        return usageService.incrementUsage(parkingLotId, localDate);
+    }
 
-  @GetMapping
-  public Usage getUsage(@RequestParam Integer parkingLotId, @RequestParam String date) {
-    LocalDate localDate = LocalDate.parse(date);
-    return usageService.getUsage(parkingLotId, localDate);
-  }
+    @DeleteMapping
+    public Usage leave(@RequestParam Integer parkingLotId, @RequestParam String date) {
+        LocalDate localDate = LocalDate.parse(date);
+        return usageService.decrementUsage(parkingLotId, localDate);
+    }
 
+    @GetMapping
+    public Usage getUsage(@RequestParam Integer parkingLotId, @RequestParam String date) {
+        LocalDate localDate = LocalDate.parse(date);
+        return usageService.getUsage(parkingLotId, localDate);
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<Void> update() {
+        return ResponseEntity.ok().build();
+    }
 }
