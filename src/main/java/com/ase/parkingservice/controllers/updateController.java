@@ -11,7 +11,7 @@ import com.ase.parkingservice.services.ExternalApiService;
 public class updateController {
   private final ExternalApiService externalApiService;
 
-  public RootController(ExternalApiService externalApiService) {
+  public updateController(ExternalApiService externalApiService) {
     this.externalApiService = externalApiService;
   }
 
