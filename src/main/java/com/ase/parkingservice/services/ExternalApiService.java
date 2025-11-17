@@ -26,4 +26,9 @@ public class ExternalApiService {
 
     return List.of(response.getBody());
   }
+
+  public String update() {
+    return "";
+  }
+    
 }
