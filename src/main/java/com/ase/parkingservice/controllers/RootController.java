@@ -15,32 +15,32 @@ import com.ase.parkingservice.services.UsageService;
 @RequestMapping("/api/parkingservice")
 public class RootController {
 
-    private final UsageService usageService;
+  private final UsageService usageService;
 
-    public RootController(UsageService usageService) {
-        this.usageService = usageService;
-    }
+  public RootController(UsageService usageService) {
+    this.usageService = usageService;
+  }
 
-    @PostMapping
-    public Usage park(@RequestParam Integer parkingLotId, @RequestParam String date) {
-        LocalDate localDate = LocalDate.parse(date);
-        return usageService.incrementUsage(parkingLotId, localDate);
-    }
+  @PostMapping
+  public Usage park(@RequestParam Integer parkingLotId, @RequestParam String date) {
+    LocalDate localDate = LocalDate.parse(date);
+    return usageService.incrementUsage(parkingLotId, localDate);
+  }
 
-    @DeleteMapping
-    public Usage leave(@RequestParam Integer parkingLotId, @RequestParam String date) {
-        LocalDate localDate = LocalDate.parse(date);
-        return usageService.decrementUsage(parkingLotId, localDate);
-    }
+  @DeleteMapping
+  public Usage leave(@RequestParam Integer parkingLotId, @RequestParam String date) {
+    LocalDate localDate = LocalDate.parse(date);
+    return usageService.decrementUsage(parkingLotId, localDate);
+  }
 
-    @GetMapping
-    public Usage getUsage(@RequestParam Integer parkingLotId, @RequestParam String date) {
-        LocalDate localDate = LocalDate.parse(date);
-        return usageService.getUsage(parkingLotId, localDate);
-    }
+  @GetMapping
+  public Usage getUsage(@RequestParam Integer parkingLotId, @RequestParam String date) {
+    LocalDate localDate = LocalDate.parse(date);
+    return usageService.getUsage(parkingLotId, localDate);
+  }
 
-    @PostMapping("/update")
-    public ResponseEntity<Void> update() {
-        return ResponseEntity.ok().build();
-    }
+  @PostMapping("/update")
+  public ResponseEntity<Void> update() {
+    return ResponseEntity.ok().build();
+  }
 }
