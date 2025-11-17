@@ -16,7 +16,7 @@ public class updateController {
   }
 
   @PostMapping
-  public Update update() {
+  public String update() {
     return externalApiService.update();
   }
 
