@@ -101,7 +101,7 @@ We run Checkstyle in CI on every push and on PRs to `main`.
   - Fails the job on violations and uploads `target/checkstyle-report.xml` as an artifact
 
 - Blocking PRs on failures:
-  - In GitHub repo settings → Branches → Protect `main`
+  - In GitHub repo settings  → Branches → Protect `main`
   - Enable “Require status checks to pass before merging”
   - Select the “Checkstyle” job as a required status check
 
